@@ -6,6 +6,15 @@ const mint = '#9ef4dc';
 const amber = '#ffcb7d';
 const ink = '#152129';
 const duration = 8;
+const controls = [...document.querySelectorAll('#settings input')];
+const settings = Object.fromEntries(controls.map(input => [
+  input.id, input.type === 'number' ? Number(input.value) : input.value
+]));
+controls.forEach(input => input.addEventListener('input', () => {
+  if (input.type === 'number' && (input.value === '' || !input.validity.valid)) return;
+  settings[input.id] = input.type === 'number' ? input.valueAsNumber : input.value;
+  draw();
+}));
 
 function rect(x, y, w, h, color) {
   ctx.fillStyle = color;
@@ -29,10 +38,10 @@ function render(t) {
   ctx.bezierCurveTo(325, 149, 283, 187, 283, 232);
   ctx.bezierCurveTo(283, 334, 437, 334, 437, 232);
   ctx.bezierCurveTo(437, 187, 395, 149, 360, 90);
-  ctx.lineWidth = 4;
+  ctx.lineWidth = settings.stroke;
   ctx.strokeStyle = mint;
   ctx.stroke();
-  const p = smooth((t - 1) / 2);
+  const p = smooth((t - settings.delay) / 2);
   line([[322, 230], [350, 258], [350 + 51 * p, 258 - 63 * p]], amber, 7);
 }
 
@@ -74,6 +83,13 @@ play.addEventListener('click', () => {
 seek.addEventListener('input', () => {
   position = Number(seek.value);
   draw();
+});
+
+document.querySelector('#save').addEventListener('click', () => {
+  const link = document.createElement('a');
+  link.download = 'water-drop-icon.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
 });
 
 draw();
